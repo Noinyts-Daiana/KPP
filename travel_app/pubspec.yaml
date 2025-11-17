@@ -10,17 +10,31 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^4.2.0
-  firebase_auth: ^6.1.1
+  
+  # 👇 АКТУАЛЬНІ, СУМІСНІ ВЕРСІЇ FIREBASE (Виправлення конфлікту)
+  
+  # Основні пакети: використовуємо останні стабільні версії
+  firebase_core: ^2.24.2       # Сучасна версія Core
+  
+  # Виправлення: використовуємо актуальні версії, сумісні з Core 2.x
+  firebase_auth: ^4.15.2       # Актуальна версія Auth
+  cloud_firestore: ^4.13.3     # Актуальна версія Firestore
+  firebase_crashlytics: ^3.4.7 # Актуальна версія Crashlytics
+  
+  # Інші Firebase пакети
   google_sign_in: ^6.2.1
-  firebase_analytics: ^12.0.3
-  firebase_crashlytics: ^5.0.3
-
+  firebase_analytics: ^10.7.4
+  
+  # Інші залежності
+  flutter_bloc: ^8.1.3 
+  intl: ^0.18.1
+  provider: ^6.1.5+1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  mocktail: ^1.0.0
 
 flutter:
   uses-material-design: true
