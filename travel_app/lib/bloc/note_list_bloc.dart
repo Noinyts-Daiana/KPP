@@ -1,11 +1,9 @@
-// lib/bloc/note_list_bloc.dart
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../repositories/notes_repository.dart';
 import '../models/travel_models.dart';
 import 'note_list_state.dart'; 
 
-// --- ПОДІЇ ---
 abstract class NoteListEvent {
   const NoteListEvent();
 }
@@ -24,18 +22,16 @@ class NotesLoadingFailedEvent extends NoteListEvent {
   const NotesLoadingFailedEvent(this.error);
 }
 
-// --- BLoC ---
 class NoteListBloc extends Bloc<NoteListEvent, NoteState> {
   final NotesRepository _repository;
-  final String userId; // 👈 Зберігаємо реальний UID
+  final String userId; 
   StreamSubscription? _notesSubscription;
 
-  // 💡 ОНОВЛЕНО: BLoC тепер вимагає userId
   NoteListBloc(this._repository, this.userId) : super(NoteInitialState()) {
     on<FetchNotesEvent>(_onFetchNotes);
     on<NotesUpdatedEvent>(_onNotesUpdated);
     on<NotesLoadingFailedEvent>(_onNotesLoadingFailed);
-    add(const FetchNotesEvent()); // Початкове завантаження
+    add(const FetchNotesEvent()); 
   }
 
   Future<void> _onFetchNotes(
@@ -46,7 +42,6 @@ class NoteListBloc extends Bloc<NoteListEvent, NoteState> {
     await _notesSubscription?.cancel();
 
     try {
-      // 💡 ОНОВЛЕНО: Використовуємо реальний 'userId'
       _notesSubscription = _repository.getNotes(userId)
           .listen(
         (notes) {

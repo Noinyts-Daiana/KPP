@@ -1,4 +1,3 @@
-// lib/models/travel_models.dart
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 
 class Item {
@@ -6,22 +5,36 @@ class Item {
   final String name;
   final String category;
   final bool isPacked;
+  final String? imageUrl;
 
-  Item({required this.id, required this.name, required this.category, this.isPacked = false});
+  Item({
+    required this.id,
+    required this.name,
+    required this.category,
+    this.isPacked = false,
+    this.imageUrl,
+  });
 
-  factory Item.fromFirestore(Map<String, dynamic> data, String id) {
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'category': category,
+      'isPacked': isPacked,
+      'imageUrl': imageUrl,
+    };
+  }
+
+  factory Item.fromFirestore(Map<String, dynamic> data, String documentId) {
     return Item(
-      id: id,
+      id: documentId,
       name: data['name'] ?? '',
       category: data['category'] ?? '',
       isPacked: data['isPacked'] ?? false,
+      imageUrl: data['imageUrl'],
     );
   }
-
-  Map<String, dynamic> toFirestore() {
-    return {'name': name, 'category': category, 'isPacked': isPacked};
-  }
 }
+
 
 class Note {
   final String id;
@@ -109,10 +122,6 @@ class Trip {
     String? transportation, 
     String? accommodation,  
     double? budget,         
-    String? plannedActivities, // ДОДАНО
-    String? documents,         // ДОДАНО
-    List<Item>? packingList,
-    List<Note>? notes,
   }) {
     return Trip(
       id: id ?? this.id,

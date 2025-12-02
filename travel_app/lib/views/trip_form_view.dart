@@ -9,12 +9,9 @@ import '../repositories/trips_repository.dart';
 
 const Color primaryColor = Color(0xFF0D47A1); 
 const Color accentColor = Color(0xFFF5F5F5); 
-const Color textColor = Color(0xFF0D47A1); 
 
 class TripFormView extends StatelessWidget {
   final Trip? initialTrip;
-  
-  // ❌ ВИДАЛЕНО: "currentUserId" (будемо брати з Auth)
 
   TripFormView({super.key, this.initialTrip});
 
@@ -25,7 +22,6 @@ class TripFormView extends StatelessWidget {
   final _accommodationController = TextEditingController();
   final _budgetController = TextEditingController();
 
-  // Імітація дат (для простоти форми)
   final DateTime mockStartDate = DateTime.now().add(const Duration(days: 10));
   final DateTime mockEndDate = DateTime.now().add(const Duration(days: 20));
 
@@ -44,13 +40,17 @@ class TripFormView extends StatelessWidget {
     _initControllers();
 
     return BlocProvider(
-      create: (providerContext) => ManageTripBloc(providerContext.read<TripsRepository>()),
+      create: (ctx) => ManageTripBloc(ctx.read<TripsRepository>()),
       child: BlocListener<ManageTripBloc, ManageTripState>(
         listener: (listenerContext, state) {
           if (state is ManageTripSuccess) {
             ScaffoldMessenger.of(listenerContext).showSnackBar(
-              SnackBar(content: Text(initialTrip == null ? 'Поїздку успішно створено!' : 'Поїздку успішно оновлено!')),
+              SnackBar(
+                  content: Text(initialTrip == null
+                      ? 'Поїздку успішно створено!'
+                      : 'Поїздку успішно оновлено!')),
             );
+            // ❗ Ми використовуємо TripListBloc через BlocProvider.value
             listenerContext.read<TripListBloc>().add(const FetchTripsEvent());
             Navigator.of(listenerContext).pop();
           } else if (state is ManageTripFailure) {
@@ -59,11 +59,12 @@ class TripFormView extends StatelessWidget {
             );
           }
         },
-        child: Builder( 
+        child: Builder(
           builder: (builderContext) {
             return Container(
-              height: MediaQuery.of(builderContext).size.height * 0.85, // Збільшено висоту
-              padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(builderContext).viewInsets.bottom + 20),
+              height: MediaQuery.of(builderContext).size.height * 0.85,
+              padding: EdgeInsets.fromLTRB(
+                  20, 20, 20, MediaQuery.of(builderContext).viewInsets.bottom + 20),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -72,26 +73,28 @@ class TripFormView extends StatelessWidget {
                   children: [
                     Text(
                       initialTrip == null ? 'НОВА ПОЇЗДКА' : 'РЕДАГУВАННЯ ПОЇЗДКИ',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primaryColor),
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold, color: primaryColor),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
-
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _buildTextField(_nameController, 'Назва поїздки (TRIP NAME)', 'Обов\'язкове поле'),
-                            _buildDateField('Дати', '${mockStartDate.day} Apr, ${mockStartDate.year} - ${mockEndDate.day} Apr, ${mockEndDate.year}'),
-                            _buildTextField(_destinationController, 'Місце призначення', 'Куди ви їдете?'),
-                            _buildTextField(_transportationController, 'Транспорт (TRANSPORTATION)', 'Наприклад: Літак, Автобус'),
-                            _buildTextField(_accommodationController, 'Проживання (ACCOMMODATION)', 'Наприклад: Готель "Львів"'),
-                            _buildNumericField(_budgetController, 'Бюджет (BUDGET)', 'Введіть суму')],
+                            _buildTextField(_nameController, 'Назва поїздки', 'Обов\'язкове поле'),
+                            _buildDateField(
+                                'Дати',
+                                '${mockStartDate.day} Apr, ${mockStartDate.year} - ${mockEndDate.day} Apr, ${mockEndDate.year}'),
+                            _buildTextField(_destinationController, 'Місце призначення', 'Обов\'язкове поле'),
+                            _buildTextField(_transportationController, 'Транспорт', 'Обов\'язкове поле'),
+                            _buildTextField(_accommodationController, 'Проживання', 'Обов\'язкове поле'),
+                            _buildNumericField(_budgetController, 'Бюджет', 'Введіть число'),
+                          ],
                         ),
                       ),
                     ),
-
                     _buildActionButtons(builderContext),
                   ],
                 ),
@@ -112,11 +115,7 @@ class TripFormView extends StatelessWidget {
           labelText: label,
           filled: true,
           fillColor: accentColor.withOpacity(0.5),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -133,16 +132,12 @@ class TripFormView extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 15.0),
       child: TextFormField(
         controller: controller,
-        keyboardType: TextInputType.number, 
+        keyboardType: TextInputType.number,
         decoration: InputDecoration(
           labelText: label,
           filled: true,
           fillColor: accentColor.withOpacity(0.5),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
         ),
         validator: (value) {
           if (value == null || double.tryParse(value) == null) {
@@ -165,11 +160,7 @@ class TripFormView extends StatelessWidget {
           filled: true,
           fillColor: accentColor.withOpacity(0.5),
           suffixIcon: const Icon(Icons.calendar_today, color: primaryColor),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
         ),
       ),
     );
@@ -188,25 +179,26 @@ class TripFormView extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         ElevatedButton(
-          onPressed: isProcessing ? null : () {
-            if (_formKey.currentState!.validate()) {
-              final tripToSave = Trip(
-                id: initialTrip?.id ?? '',
-                // 💡 ВИПРАВЛЕНО: UID береться з BLoC (який бере його з FirebaseAuth)
-                userId: '', // BLoC сам оновить це поле
-                name: _nameController.text,
-                destination: _destinationController.text,
-                transportation: _transportationController.text,
-                accommodation: _accommodationController.text,
-                budget: double.tryParse(_budgetController.text) ?? 0.0,
-                startDate: mockStartDate,
-                endDate: mockEndDate,
-              );
-              bloc.add(SaveTripEvent(tripToSave, isNew: initialTrip == null));
-            }
-          },
+          onPressed: isProcessing
+              ? null
+              : () {
+                  if (_formKey.currentState!.validate()) {
+                    final tripToSave = Trip(
+                      id: initialTrip?.id ?? '',
+                      userId: '', // BLoC сам оновить UID
+                      name: _nameController.text,
+                      destination: _destinationController.text,
+                      transportation: _transportationController.text,
+                      accommodation: _accommodationController.text,
+                      budget: double.tryParse(_budgetController.text) ?? 0.0,
+                      startDate: mockStartDate,
+                      endDate: mockEndDate,
+                    );
+                    bloc.add(SaveTripEvent(tripToSave, isNew: initialTrip == null));
+                  }
+                },
           style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-          child: isProcessing 
+          child: isProcessing
               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
               : Text(initialTrip == null ? 'ДОДАТИ' : 'ЗБЕРЕГТИ'),
         ),

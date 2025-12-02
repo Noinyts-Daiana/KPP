@@ -1,9 +1,7 @@
-// lib/bloc/manage_note_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/travel_models.dart';
 import '../repositories/notes_repository.dart';
 
-// --- СТАНИ ---
 abstract class ManageNoteState {}
 class ManageNoteInitial extends ManageNoteState {} 
 class ManageNoteProcessing extends ManageNoteState {} 
@@ -13,7 +11,6 @@ class ManageNoteFailure extends ManageNoteState {
   ManageNoteFailure(this.error);
 }
 
-// --- ПОДІЇ ---
 abstract class ManageNoteEvent {}
 
 class SaveNoteEvent extends ManageNoteEvent {
@@ -25,7 +22,7 @@ class SaveNoteEvent extends ManageNoteEvent {
 
 class ManageNoteBloc extends Bloc<ManageNoteEvent, ManageNoteState> {
   final NotesRepository _repository;
-  final String userId; // 👈 Потрібен для addNote
+  final String userId; 
 
   ManageNoteBloc(this._repository, this.userId) : super(ManageNoteInitial()) {
     on<SaveNoteEvent>(_onSaveNote);
@@ -40,7 +37,6 @@ class ManageNoteBloc extends Bloc<ManageNoteEvent, ManageNoteState> {
 
     try {
       if (event.isNew) {
-        // 💡 ВИПРАВЛЕНО: Передаємо userId в addNote
         await _repository.addNote(event.note, userId); 
       } else {
         await _repository.updateNote(event.note);

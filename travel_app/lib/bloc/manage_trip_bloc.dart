@@ -1,11 +1,8 @@
-// lib/bloc/manage_trip_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 👈 Потрібен для UID
+import 'package:firebase_auth/firebase_auth.dart'; 
 import '../models/travel_models.dart';
 import '../repositories/trips_repository.dart';
 
-
-// --- СТАНИ ---
 abstract class ManageTripState {}
 class ManageTripInitial extends ManageTripState {} 
 class ManageTripProcessing extends ManageTripState {} 
@@ -15,12 +12,11 @@ class ManageTripFailure extends ManageTripState {
   ManageTripFailure(this.error);
 }
 
-// --- ПОДІЇ ---
 abstract class ManageTripEvent {}
 
 class SaveTripEvent extends ManageTripEvent {
-  final Trip trip; // Дані з форми
-  final bool isNew;  // Це нова поїздка чи редагування?
+  final Trip trip; 
+  final bool isNew;  
   
   SaveTripEvent(this.trip, {required this.isNew});
 }
@@ -28,7 +24,6 @@ class SaveTripEvent extends ManageTripEvent {
 
 class ManageTripBloc extends Bloc<ManageTripEvent, ManageTripState> {
   final TripsRepository _repository;
-  // 💡 Отримуємо UID з Firebase Auth (це безпечніше, ніж передавати)
   final String _userId = FirebaseAuth.instance.currentUser!.uid; 
 
   ManageTripBloc(this._repository) : super(ManageTripInitial()) {
@@ -42,9 +37,7 @@ class ManageTripBloc extends Bloc<ManageTripEvent, ManageTripState> {
     emit(ManageTripProcessing()); 
     await Future.delayed(const Duration(milliseconds: 500)); 
 
-    // 👇 ВИПРАВЛЕНО: Додано блок try...catch для обробки помилок
     try {
-      // Переконуємося, що userId встановлено коректно
       final tripToSave = event.trip.copyWith(userId: _userId);
 
       if (event.isNew) {
@@ -54,7 +47,6 @@ class ManageTripBloc extends Bloc<ManageTripEvent, ManageTripState> {
       }
       emit(ManageTripSuccess()); 
     } catch (e) {
-      // Обробка помилки, якщо Firestore/Репозиторій не спрацював
       emit(ManageTripFailure('Failed to save trip: ${e.toString()}')); 
     }
   }

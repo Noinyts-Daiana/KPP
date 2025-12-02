@@ -1,9 +1,8 @@
-// lib/controllers/register_controller.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // 👈 ДОДАНО
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../views/sign_view.dart';
 import '../views/main_view.dart';
 
@@ -14,14 +13,12 @@ class RegisterController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // 👈 ДОДАНО
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; 
 
   void goToSignIn() {
-    // Використовуємо pop, оскільки RegisterView, ймовірно, відкрився поверх SignView
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
     } else {
-      // Якщо ні, то переходимо (запасний варіант)
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SignView()),
@@ -29,10 +26,8 @@ class RegisterController {
     }
   }
 
-  // Допоміжний метод для збереження даних користувача у Firestore
   Future<void> _saveUserData(User user, String name) async {
     final userDocRef = _firestore.collection('users').doc(user.uid);
-    // set з merge:true, щоб не перезаписати існуючі дані
     await userDocRef.set({
       'uid': user.uid,
       'email': user.email,
@@ -47,22 +42,23 @@ class RegisterController {
     required String password,
   }) async {
     try {
-      // 1. Створюємо користувача в Auth
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+
       await _auth.currentUser?.updateDisplayName(name);
 
-      // 2. 💡 ЗБЕРІГАЄМО КОРИСТУВАЧА У FIRESTORE (КОЛЕКЦІЯ 'users')
       if (userCredential.user != null) {
         await _saveUserData(userCredential.user!, name);
       }
 
-      // 3. Логування та навігація
       await _analytics.logSignUp(signUpMethod: 'email');
 
-      if (context.mounted) {
+      if (context.mounted && userCredential.user != null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MainView()),
+          MaterialPageRoute(
+            builder: (context) => MainView(userId: userCredential.user!.uid),
+          ),
         );
       }
 
@@ -76,7 +72,9 @@ class RegisterController {
         'weak-password' => 'Password should be at least 6 characters.',
         _ => 'Registration failed. Please try again.',
       };
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     }
   }
 
@@ -91,22 +89,25 @@ class RegisterController {
         idToken: googleAuth.idToken,
       );
 
-      // 1. Вхід в Auth
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
 
-      // 2. 💡 ЗБЕРІГАЄМО КОРИСТУВАЧА У FIRESTORE (КОЛЕКЦІЯ 'users')
       if (userCredential.user != null) {
-        await _saveUserData(userCredential.user!, userCredential.user!.displayName ?? 'Google User');
+        await _saveUserData(
+          userCredential.user!,
+          userCredential.user!.displayName ?? 'Google User',
+        );
       }
 
-      // 3. Логування та навігація
       await _analytics.logLogin(loginMethod: 'google');
       await _analytics.logEvent(name: 'google_sign_in');
 
-      if (context.mounted) {
+      if (context.mounted && userCredential.user != null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MainView()),
+          MaterialPageRoute(
+            builder: (context) => MainView(userId: userCredential.user!.uid),
+          ),
         );
       }
 

@@ -1,42 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../repositories/trips_repository.dart';
+import '../repositories/notes_repository.dart';
+import '../repositories/items_repository.dart';
 import 'trip_list_view.dart';
+import 'note_list_view.dart';
+import 'item_list_view.dart';
+import '../bloc/trip_list_bloc.dart';
+import '../bloc/note_list_bloc.dart';
+import '../bloc/item_list_bloc.dart';
+import '../bloc/trip_list_event.dart';
 
 class MainView extends StatelessWidget {
-  const MainView({super.key});
+  final String userId;
+  const MainView({super.key, required this.userId});
 
   Widget _buildMainButton(BuildContext context, String text, Widget destinationView) {
     return ElevatedButton(
       onPressed: () {
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => destinationView,
-          ),
+          MaterialPageRoute(builder: (_) => destinationView),
         );
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xB700295E), 
+        backgroundColor: const Color(0xB700295E),
         minimumSize: const Size(289, 60),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), 
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white, fontSize: 18),
-      ),
+      child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 18)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const tripListView = TripListView(); 
-    
+    final tripsRepository = context.read<TripsRepository>();
+    final notesRepository = context.read<NotesRepository>();
+    final itemsRepository = context.read<ItemsRepository>();
+
     return Scaffold(
       body: Stack(
         children: [
           SizedBox.expand(
             child: Image.asset(
-              'assets/images/HomeScreenBack.jpg', 
+              'assets/images/HomeScreenBack.jpg',
               fit: BoxFit.cover,
             ),
           ),
@@ -80,17 +88,17 @@ class MainView extends StatelessWidget {
                   children: const [
                     Row(
                       children: [
-                        Icon(Icons.flight, color: Color(0xFF00295E)),
+                        Icon(Icons.flight),
                         SizedBox(width: 8),
-                        Text('Scheduled trips:', style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text('Scheduled trips:'),
                       ],
                     ),
                     SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.calendar_today, color: Color(0xFF00295E)),
+                        Icon(Icons.calendar_today),
                         SizedBox(width: 8),
-                        Text('No planned trips', style: TextStyle(color: Color(0xFF00295E))),
+                        Text('No planned trips'),
                       ],
                     ),
                   ],
@@ -100,26 +108,38 @@ class MainView extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
+                    // Trips
                     _buildMainButton(
-                      context, 
-                      'Open a list of trip', 
-                      tripListView
+                      context,
+                      'Open a list of trip',
+                      BlocProvider(
+                        create: (_) => TripListBloc(tripsRepository, userId)
+                          ..add(FetchTripsEvent()), // без const
+                        child: TripListView(userId: userId),
+                      ),
                     ),
                     const SizedBox(height: 20),
-
+                    // Items
                     _buildMainButton(
-                      context, 
-                      'Open a list of items', 
-                      tripListView 
+                      context,
+                      'Open a list of items',
+                      BlocProvider(
+                        create: (_) => ItemListBloc(itemsRepository, userId)
+                          ..add(FetchItemsEvent()), // без const
+                        child: ItemListView(userId: userId),
+                      ),
                     ),
                     const SizedBox(height: 20),
-
+                    // Notes
                     _buildMainButton(
-                      context, 
-                      'Open notes', 
-                      tripListView 
+                      context,
+                      'Open notes',
+                      BlocProvider(
+                        create: (_) => NoteListBloc(notesRepository, userId)
+                          ..add(FetchNotesEvent()), // без const
+                        child: NoteListView(userId: userId),
+                      ),
                     ),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),

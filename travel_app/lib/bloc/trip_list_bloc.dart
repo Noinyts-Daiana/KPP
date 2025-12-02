@@ -1,21 +1,15 @@
-// lib/bloc/trip_list_bloc.dart
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../repositories/trips_repository.dart';
 import 'trip_list_event.dart';
-import '/models/travel_models.dart';
 import 'trip_list_state.dart';
 
 class TripListBloc extends Bloc<TripListEvent, TripState> {
-  final TripsRepository repository; // тепер публічний
+  final TripsRepository _repository;
   final String userId;
-  StreamSubscription<List<Trip>>? _tripsSubscription;
+  StreamSubscription? _tripsSubscription;
 
-  // ✅ Використовуємо іменовані параметри, щоб не було помилок у BlocProvider
-  TripListBloc({
-    required this.repository,
-    required this.userId,
-  }) : super(TripInitialState()) {
+  TripListBloc(this._repository, this.userId) : super(TripInitialState()) {
     on<FetchTripsEvent>(_onFetchTrips);
     on<TripsUpdatedEvent>(_onTripsUpdated);
     on<TripsLoadingFailedEvent>(_onTripsLoadingFailed);
@@ -26,11 +20,11 @@ class TripListBloc extends Bloc<TripListEvent, TripState> {
     Emitter<TripState> emit,
   ) async {
     emit(TripLoadingState(data: state.data));
-
-    await _tripsSubscription?.cancel(); // відписуємося від попереднього стріму
+    await _tripsSubscription?.cancel();
 
     try {
-      _tripsSubscription = repository.getTrips(userId).listen(
+      _tripsSubscription = _repository.getTrips(userId)
+          .listen(
         (trips) {
           add(TripsUpdatedEvent(trips));
         },

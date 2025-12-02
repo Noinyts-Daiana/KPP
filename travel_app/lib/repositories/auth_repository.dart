@@ -1,4 +1,3 @@
-// lib/repositories/auth_repository.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,15 +15,12 @@ class AuthRepository {
         _googleSignIn = googleSignIn ?? GoogleSignIn(),
         _firestore = firestore ?? FirebaseFirestore.instance;
 
-  // Потік для відстеження стану автентифікації
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
-  // Отримати поточного користувача
   User? getCurrentUser() {
     return _firebaseAuth.currentUser;
   }
 
-  // Вхід через Google
   Future<void> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -49,12 +45,10 @@ class AuthRepository {
     }
   }
 
-  // Вхід з Email/Паролем
   Future<void> signInWithEmail(String email, String password) async {
     await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
   }
 
-  // Реєстрація з Email/Паролем
   Future<void> signUpWithEmail(String name, String email, String password) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
@@ -71,7 +65,6 @@ class AuthRepository {
     }
   }
 
-  // Допоміжний метод для збереження даних у Firestore
   Future<void> _saveUserData(User user, String name) async {
     final userDocRef = _firestore.collection('users').doc(user.uid);
     await userDocRef.set({
@@ -82,7 +75,6 @@ class AuthRepository {
     }, SetOptions(merge: true));
   }
 
-  // Вихід
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _firebaseAuth.signOut();

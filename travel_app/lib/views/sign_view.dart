@@ -77,7 +77,7 @@ class _SignViewState extends State<SignView> {
   }
 
   Widget _buildGoogleSignInButton() {
-    return Container(
+    return SizedBox(
       width: 289,
       height: 60,
       child: ElevatedButton(

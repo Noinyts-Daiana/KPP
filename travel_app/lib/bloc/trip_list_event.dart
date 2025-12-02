@@ -1,4 +1,3 @@
-// lib/bloc/trip_list_event.dart
 import '../models/travel_models.dart';
 
 abstract class TripListEvent {

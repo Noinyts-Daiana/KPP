@@ -1,4 +1,3 @@
-// lib/bloc/note_list_state.dart
 import '../models/travel_models.dart';
 
 abstract class NoteState {
